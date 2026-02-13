@@ -34,6 +34,8 @@ export interface InferenceResponse {
   }>
 }
 
+// Note: solution around models using different underlying max tokens properties
+
 /**
  * Build according to what input was passed, default to max_tokens.
  * Only one of max_tokens or max_completion_tokens will be set.
