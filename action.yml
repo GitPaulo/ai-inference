@@ -43,11 +43,11 @@ inputs:
     required: false
     default: ''
   max-tokens:
-    description: Maximum tokens to generate (deprecated)
+    description: The maximum tokens to generate (deprecated)
     required: false
     default: '200'
   max-completion-tokens:
-    description: Maximum tokens to generate
+    description: The maximum tokens to generate
     required: false
     default: ''
   temperature:
