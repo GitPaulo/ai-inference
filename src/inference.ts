@@ -12,7 +12,8 @@ interface ChatMessage {
 export interface InferenceRequest {
   messages: Array<{role: 'system' | 'user' | 'assistant' | 'tool'; content: string}>
   modelName: string
-  maxTokens: number
+  maxTokens?: number // Deprecated
+  maxCompletionTokens?: number
   endpoint: string
   token: string
   temperature?: number
@@ -34,6 +35,20 @@ export interface InferenceResponse {
 }
 
 /**
+ * Build the token limit params for a chat completion request.
+ * Only one of max_tokens or max_completion_tokens will be set.
+ */
+function buildMaxTokensParam(request: InferenceRequest): {max_tokens?: number; max_completion_tokens?: number} {
+  if (request.maxCompletionTokens != null) {
+    return {max_completion_tokens: request.maxCompletionTokens}
+  }
+  if (request.maxTokens != null) {
+    return {max_tokens: request.maxTokens}
+  }
+  return {}
+}
+
+/**
  * Simple one-shot inference without tools
  */
 export async function simpleInference(request: InferenceRequest): Promise<string | null> {
@@ -47,10 +62,10 @@ export async function simpleInference(request: InferenceRequest): Promise<string
 
   const chatCompletionRequest: OpenAI.Chat.Completions.ChatCompletionCreateParams = {
     messages: request.messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-    max_completion_tokens: request.maxTokens,
     model: request.modelName,
     temperature: request.temperature,
     top_p: request.topP,
+    ...buildMaxTokensParam(request), // Note: solution around models using different underlying max tokens properties
   }
 
   // Add response format if specified
@@ -95,10 +110,10 @@ export async function mcpInference(
 
     const chatCompletionRequest: OpenAI.Chat.Completions.ChatCompletionCreateParams = {
       messages: messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-      max_completion_tokens: request.maxTokens,
       model: request.modelName,
       temperature: request.temperature,
       top_p: request.topP,
+      ...buildMaxTokensParam(request),
     }
 
     // Add response format if specified (only on final iteration to avoid conflicts with tool calls)
@@ -162,9 +177,7 @@ export async function mcpInference(
 }
 
 /**
- * Wrapper around OpenAI chat.completions.create with defensive handling for cases where
- * the SDK returns a raw string (e.g., unexpected content-type or streaming body) instead of
- * a parsed object. Ensures an object with a 'choices' array is returned or throws a descriptive error.
+ * Wrapper around OpenAI chat.completions.create with response validation.
  */
 async function chatCompletion(
   client: OpenAI,
