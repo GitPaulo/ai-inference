@@ -58300,7 +58300,6 @@ OpenAI.Responses = Responses;
 OpenAI.Evals = Evals;
 OpenAI.Containers = Containers;
 
-// Note: solution around models using different underlying max tokens properties
 /**
  * Build according to what input was passed, default to max_tokens.
  * Only one of max_tokens or max_completion_tokens will be set.
@@ -58366,7 +58365,7 @@ async function mcpInference(request, githubMcpClient) {
             model: request.modelName,
             temperature: request.temperature,
             top_p: request.topP,
-            ...buildMaxTokensParam(request),
+            ...buildMaxTokensParam(request), // Note: solution around models using different underlying max tokens properties
         };
         // Add response format if specified (only on final iteration to avoid conflicts with tool calls)
         if (finalMessage && request.responseFormat) {

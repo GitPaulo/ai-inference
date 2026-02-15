@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import OpenAI from 'openai'
-import { GitHubMCPClient, executeToolCalls, ToolCall } from './mcp.js'
+import {GitHubMCPClient, executeToolCalls, ToolCall} from './mcp.js'
 
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
@@ -10,7 +10,7 @@ interface ChatMessage {
 }
 
 export interface InferenceRequest {
-  messages: Array<{ role: 'system' | 'user' | 'assistant' | 'tool'; content: string }>
+  messages: Array<{role: 'system' | 'user' | 'assistant' | 'tool'; content: string}>
   modelName: string
   maxTokens?: number // Deprecated
   maxCompletionTokens?: number
@@ -18,7 +18,7 @@ export interface InferenceRequest {
   token: string
   temperature?: number
   topP?: number
-  responseFormat?: { type: 'json_schema'; json_schema: unknown } // Processed response format for the API
+  responseFormat?: {type: 'json_schema'; json_schema: unknown} // Processed response format for the API
   customHeaders?: Record<string, string> // Custom HTTP headers to include in API requests
 }
 
@@ -34,17 +34,16 @@ export interface InferenceResponse {
   }>
 }
 
-
 /**
  * Build according to what input was passed, default to max_tokens.
  * Only one of max_tokens or max_completion_tokens will be set.
  */
-function buildMaxTokensParam(request: InferenceRequest): { max_tokens?: number; max_completion_tokens?: number } {
+function buildMaxTokensParam(request: InferenceRequest): {max_tokens?: number; max_completion_tokens?: number} {
   if (request.maxCompletionTokens != null) {
-    return { max_completion_tokens: request.maxCompletionTokens }
+    return {max_completion_tokens: request.maxCompletionTokens}
   }
   if (request.maxTokens != null) {
-    return { max_tokens: request.maxTokens }
+    return {max_tokens: request.maxTokens}
   }
   return {}
 }
@@ -137,7 +136,7 @@ export async function mcpInference(
       messages.push({
         role: 'assistant',
         content: modelResponse || '',
-        ...(toolCalls && { tool_calls: toolCalls as ToolCall[] }),
+        ...(toolCalls && {tool_calls: toolCalls as ToolCall[]}),
       })
 
       if (!toolCalls || toolCalls.length === 0) {
